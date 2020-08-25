@@ -1,3 +1,6 @@
+from Bio import SeqIO
+import nav
+
 """
 MODULE FOR PARSING XML TO TAB
 REQUIRES A DICT FILE AND AN XML BLAST OUTPUT
@@ -22,7 +25,7 @@ def get_descriptor_list(line) -> list:
 
 def get_gene(line):
     """
-
+    Retrieve gene from string "line" from XML file. 
     """
     descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
@@ -34,7 +37,7 @@ def get_gene(line):
 
 def get_location(line):
     """
-
+    Retrieve location from string "line" from XML file. 
     """
     descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
@@ -46,8 +49,7 @@ def get_location(line):
 
 def get_GC(line):
     """
-
-
+    Retrieve GC content from string "line" from XML file. 
     """
     descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
@@ -59,7 +61,7 @@ def get_GC(line):
 
 def get_locus_id(line):
     """
-    This will give you the full locus id of the object from the description line [locus_id=XXXX####]
+    Retrieve full locus id of the object from the description line [locus_id=XXXX####] from XML file.
     """
     descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
@@ -72,7 +74,7 @@ def get_locus_id(line):
 
 def get_locus_tag(line):
     """
-    This will give you the locus tag at the front of the locusid.  There are two general formats of locus tags.
+    Retrieve locus tag at the front of the locusid from XML file.
     """
     import re
 
@@ -89,8 +91,11 @@ def get_locus_tag(line):
         return locus_tag
 
 
-def get_protein(x):
-    descriptor_list = get_descriptor_list(x)
+def get_protein(line):
+    """
+    Retrieve protein from string "line" from XML file.
+    """
+    descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
         if "protein=" in str(i):
             descriptor = (str(i)[8:])
@@ -103,8 +108,11 @@ def get_protein(x):
     return "none"
 
 
-def get_protein_id(x):
-    descriptor_list = get_descriptor_list(x)
+def get_protein_id(line):
+    """
+    Retrieve protein id from string "line" from XML file.
+    """
+    descriptor_list = get_descriptor_list(line)
     for i in descriptor_list:
         if "protein_id=" in str(i):
             descriptor = (str(i)[11:])
@@ -120,9 +128,30 @@ def get_protein_id(x):
     return "none"
 
 
+def pseudo_remover(infile):
+    # make a new file to write out to.
+    output_handle = open("faa/pseudofree.faa", "w")
+
+    # define a new list variable, object_list, where we will put the sequence objects.
+    object_list = []
+    for seq_record in SeqIO.parse(infile, "fasta"):
+        if len(seq_record.seq) > 30:  # we will only keep proteins larger than 60 AA
+            object_list.append(seq_record)
+
+    for item in object_list:
+        if "PSEUDOGENE" not in item.description:
+            output_handle.write(">" + item.description + "\n")
+            output_handle.write(nav.line_format(str(item.seq) + "\n"))
+
+    output_handle.close()
+    print("Done")
+
+"""
+------ END OF HELPER FUNCTIONS -------
+"""
+
+
 def parse_cluster(infile):
-    from Bio import SeqIO
-    import nav
 
     with open(infile) as f:
         lines = [line.rstrip() for line in f]
@@ -302,26 +331,6 @@ def parse_xml(infile, outfile, strain_dictionary, pct_id_threshold):
                               + str(q_result.seq_len) + "\t" + query_GC + "\t" + str(len(hit_locus_list)) + "\t"
                               + str(number_of_strains_with_hits) + "\t" + average_percent_id + "\t"
                               + list_of_descriptions + "\t" + list_of_hit_loci + "\n")
-    return
 
 
-def pseudo_remover(infile):
-    from Bio import SeqIO
-    import nav
 
-    # make a new file to write out to.
-    output_handle = open("faa/pseudofree.faa", "w")
-
-    # define a new list variable, object_list, where we will put the sequence objects.
-    object_list = []
-    for seq_record in SeqIO.parse(infile, "fasta"):
-        if len(seq_record.seq) > 30:  # we will only keep proteins larger than 60 AA
-            object_list.append(seq_record)
-
-    for item in object_list:
-        if "PSEUDOGENE" not in item.description:
-            output_handle.write(">" + item.description + "\n")
-            output_handle.write(nav.line_format(str(item.seq) + "\n"))
-
-    output_handle.close()
-    print("Done")
