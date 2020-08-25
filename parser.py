@@ -78,6 +78,8 @@ def get_locus_tag(line):
     """
     import re
 
+    if line is None:
+        return
     # sometimes we pass items like "Y75_RS14370|WP_000220066.1|0.84" and we only want the front part.
     line = str(line.split("|")[0])
     if "_" in line:

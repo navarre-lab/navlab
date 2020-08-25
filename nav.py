@@ -1,5 +1,6 @@
 from Bio import SeqIO
 from Bio.SeqUtils import GC
+import parser
 
 
 def convert_gbk_to_fna(filename):
@@ -78,7 +79,6 @@ def convert_gbk_to_fna(filename):
                 location = str(seq_feature.location)
                 GC_content = str(GC(seq_feature.extract(seq_record).seq))
                 protein_id = product
-                protein_accession = ""
                 output_handle.write(
                     ">lcl|%s_%s%s [gene=%s] [locus_tag=%s] [product=%s] [location=%s] [GCpct=%s] [gbkey=%s]\n%s\n" % (
                         seq_record.id,
@@ -161,7 +161,7 @@ def dictmaker(filename):
         description = seq_record.description
         accession = (" | ".join(seq_record.dbxrefs))
         locus_id = get_locus_id(seq_record)
-        locus_tag = get_locus_tag(locus_id)
+        locus_tag = parser.get_locus_tag(locus_id)
         if (locus_tag is not None) and (locus_tag not in locus_tag_set):
             locus_tag_set.add(locus_tag)
             dict_entry = str(locus_tag + " | " + accession + " | " + description)

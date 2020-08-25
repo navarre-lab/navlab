@@ -73,7 +73,7 @@ for entry in os.scandir('fna'):
 cat_faa_cmd = "cat faa/*.faa > faa/temp.faa"  # now you have all proteins together
 os.system(cat_faa_cmd)
 
-parser.pseudoremover("faa/temp.faa")
+parser.pseudo_remover("faa/temp.faa")
 
 # perform mmseq2 clustering
 cluster_cmd1 = "mmseqs createdb faa/pseudofree.faa DB"
@@ -118,5 +118,5 @@ for faa_file in faa_list:
     blast_command = "diamond blastp --max-target-seqs 0 --outfmt 5 --query-cover 90 --subject-cover 90 --query faa/" +\
                     faa_file + " --db " + project_name + " --out " + xml_name
     os.system(blast_command)
-    parser.pxml(xml_name, tab_name, dict_name, pct_id)
+    parser.parse_xml(xml_name, tab_name, dict_name, pct_id)
     os.system("rm " + xml_name)
